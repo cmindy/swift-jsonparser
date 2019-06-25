@@ -1,4 +1,4 @@
-## JSON 문자열 분석기
+JSON 문자열 분석기
 
 
 
@@ -342,7 +342,9 @@ Objective-C와 Swift는 리터럴 문자열에서 특수 문자를 사용하기 
 
 <br/>
 
-### 🏗 추가된 기능
+### 🏗 수정된 기능
+
+- regex 패턴을 확장시켜 중첩된 경우도 `GrammerChecker` 에서 검사할 수 있도록 한다.
 
 - 사용한 패턴
 
@@ -358,12 +360,63 @@ Objective-C와 Swift는 리터럴 문자열에서 특수 문자를 사용하기 
   "\\[(\\s*(((true|false)|[0-9]+|\"[^\"]+\")|(\\{((\\s*\"[^\"]+\"\\s*:\\s*((true|false)|[0-9]+|\"[^\"]+\")*\\s*,?)?\\s*)*\\})|(\\[(\\s*((true|false)|[0-9]+|\"[^\"]+\")?\\s*,?)*\\]))?\\s*,?)*\\]"
   ```
 
+- swift에서는 string interpolation을 사용해서 보기 쉽게 표현
+
+  ```swift
+  static let object = "(\\{((\(keyValue))?\(whiteSpace))*\\})"
+          static let array = "(\\[(\(whiteSpace)\(value)?\(whiteSpace),?)*\\])"
+          
+          static let valueWithContainer = "(\(value)|\(object)|\(array))"
+          static let keyValueWithContainer = "\(whiteSpace)\(string)\(whiteSpace):\(whiteSpace)\(valueWithContainer)*\(whiteSpace),?"
+          static let nestedObject = "\\{((\(keyValueWithContainer))?\(whiteSpace))*\\}"
+          static let nestedArray = "\\[(\(whiteSpace)\(valueWithContainer)?\(whiteSpace),?)*\\]"
+  ```
+
+
+
+
+### Regex Pattern Visualize
+
 - Object
+
 ![object](https://user-images.githubusercontent.com/33537899/60084340-4919bc00-9772-11e9-80a8-b2926013f0fb.png)
 
-- Array
+<br/>
+
+  - Array
 
 ![array](https://user-images.githubusercontent.com/33537899/60084378-5d5db900-9772-11e9-9832-293e0e5853a5.png)
+
+
+
+## STEP-5. JSON 문자열 생성
+
+- JSON 배열이나 객체를 스위프트 배열이나 사전으로 바꾼 데이터를 기준으로  [JSON 문법 검사 사이트](https://jsonlint.com/) 처럼 출력한다.
+- Array는 한 줄로 붙여서 출력한다.
+- Array인 경우 Element로 Container가 포함되어 있으면 다음 줄로 내려서 표현한다.
+- Object는 key-value를 다음줄로 내려서 표현한다.
+
+<br/>
+
+### 🏗 추가된 기능
+
+- `JSONValueType` 을 확장해서 예쁜 JSON 문자열을 생성한다.
+  - Container가 중첩될수록 `indent`를 늘려가면서 `prettyFormat(with indent: Int) -> String` 을 재귀적으로 호출한다.
+  - `prettyFormat()`은 `value`나 `element`를 `JSONContainerType`으로 캐스팅한다.
+  - 캐스팅이 성공하면 `prettyFormat(indent + 1)`을 한다.
+  - 캐스팅이 실패하면 기본 `value`나 `element`를 리턴한다.
+
+
+
+<img width="647" alt="image" src="https://user-images.githubusercontent.com/33537899/60088501-b8df7500-9779-11e9-9db3-67b517ffb86a.png">
+
+<img width="639" alt="image" src="https://user-images.githubusercontent.com/33537899/60088651-fa702000-9779-11e9-902d-1d434f9a8302.png">
+
+<img width="647" alt="image" src="https://user-images.githubusercontent.com/33537899/60088561-d57bad00-9779-11e9-806c-f1d8febe83a8.png">
+
+
+
+
 
 ---
 
